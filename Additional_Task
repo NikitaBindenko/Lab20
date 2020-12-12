@@ -1,0 +1,83 @@
+#include <iostream>
+#include <fstream>
+#include <stack>
+#define SIZE 5
+
+using namespace std;
+
+int main()
+{
+    ifstream in("InputFile.txt", ios::in | ios::binary);
+    int start;
+    in >> start;
+
+    int c;
+    int m[SIZE][SIZE];
+    for (int x = 0; x < SIZE; x++)
+    {
+        for (int y = 0; y < SIZE; y++)
+        {
+            in >> c;
+            m[x][y] = c;
+        }
+    }
+    in.close();
+
+	bool visited[SIZE] = { 0 };
+    int OrderOfNodes[SIZE] = { 0 }; //массив для формирования d-номеров
+    int OrderCounter = 1; //для счета порядка вывода элементов, начинается с 1 потому что сразу вставляется первый элемент
+    int CheckSum = 0; //для проверки все ли вершины посещены
+    stack<int> st;
+
+    OrderOfNodes[start] = 0;
+    int ThisV = start;
+    visited[ThisV] = 1;
+    st.push(start);
+
+    ofstream out("OutputFile.txt", ios::out | ios::binary);
+    out << "digraph G {style=filled color=white node [style=filled,color=grey] ";
+    while (true)
+    {
+        if (CheckSum >= SIZE) { break; }
+        //cout << "->";
+        ThisV = st.top();
+        out << st.top();
+        int OtherV = 0;
+        while(OtherV != SIZE)
+        {
+            bool flag_cur_string = 0;
+            if (m[ThisV][OtherV] == 1)
+            {
+                if (visited[OtherV] == 0)
+                {
+                    visited[OtherV] = 1;
+                    //cout << OtherV << " ";
+                    OrderOfNodes[OtherV] = OrderCounter++;
+                    ThisV = OtherV;
+                    OtherV = 0;
+                    flag_cur_string = 1;
+                    st.push(ThisV);  
+                    out << "->" << st.top();
+                }
+            }
+            if (flag_cur_string == 0) { OtherV++; } //если только что обнулили OtherV, сюда не заходим
+            flag_cur_string = 0;
+        }
+        st.pop();
+        out << "->";
+        CheckSum = 0;
+        for (int i = 0; i < SIZE; i++) { CheckSum = CheckSum + visited[i]; } // checksum - сумма посещенных вершин
+    }
+    while (st.size() != 1)
+    {
+        out << st.top();
+        st.pop();
+        out << "->";
+    }
+    out << st.top() << "}";
+    out.close();
+
+	return 0;
+}
+
+// сделать вывод в формате GraphViz, ввод матрицы из файла, убрать goto 
