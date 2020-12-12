@@ -1,0 +1,74 @@
+#include <iostream>
+#include <fstream>
+#include <stack>
+#define SIZE 5
+
+using namespace std;
+
+int main()
+{
+    ifstream in("InputFile.txt", ios::in | ios::binary);
+    int start;
+    in >> start;
+
+    int c;
+    int m[SIZE][SIZE];
+    for (int x = 0; x < SIZE; x++)
+    {
+        for (int y = 0; y < SIZE; y++)
+        {
+            in >> c;
+            m[x][y] = c;
+        }
+    }
+    in.close();
+
+	bool visited[SIZE] = { 0 };
+    int OrderOfNodes[SIZE] = { 0 }; //массив для формирования d-номеров
+    int OrderCounter = 1; //для счета порядка вывода элементов, начинается с 1 потому что сразу вставляется первый элемент
+    int CheckSum = 0; //для проверки все ли вершины посещены
+    stack<int> st;
+
+    OrderOfNodes[start] = 0;
+    int ThisV = start;
+    visited[ThisV] = 1;
+    st.push(start);
+
+    cout << "Order of Elements: ";
+    cout << start << " ";
+    while (true)
+    {
+        if (CheckSum >= SIZE) { break; }
+        ThisV = st.top();
+        int OtherV = 0;
+        while(OtherV != SIZE)
+        {
+            if (m[ThisV][OtherV] == 1)
+            {
+                if (visited[OtherV] == 0)
+                {
+                    visited[OtherV] = 1;
+                    cout << OtherV << " ";
+                    OrderOfNodes[OtherV] = OrderCounter++;
+                    ThisV = OtherV;
+                    OtherV = 0;
+                    st.push(ThisV);   
+                    goto Skip_if_New_String;
+                }
+            }
+            OtherV++;
+            Skip_if_New_String:;
+        }
+        st.pop();
+        CheckSum = 0;
+        for (int i = 0; i < SIZE; i++) { CheckSum = CheckSum + visited[i]; } // checksum - сумма посещенных вершин
+    }
+
+    cout << "\nD-numbers of elements: ";
+    for (int i = 0; i < SIZE; i++)
+    {
+        cout << OrderOfNodes[i] << " ";
+    }
+
+	return 0;
+}
